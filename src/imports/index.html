@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารจัดการเวลาและการลา - SOFTDEBUT (Time Management System)</title>
+  <!-- IBM Plex Sans Thai for exact Design System typography compliance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Device Simulator Wrapper (allows toggle between Mobile Frame & Full Screen) -->
+  <div class="app-viewport-container">
+    
+    <!-- Floating Viewport Switcher Bar -->
+    <div class="viewport-switcher-bar">
+      <span class="switcher-title"><i data-lucide="smartphone"></i> Preview Mode:</span>
+      <button class="switcher-btn active" id="btn-mode-mobile" onclick="setDeviceMode('mobile')">
+        <i data-lucide="smartphone"></i> Mobile View
+      </button>
+      <button class="switcher-btn" id="btn-mode-desktop" onclick="setDeviceMode('responsive')">
+        <i data-lucide="monitor"></i> Full Responsive
+      </button>
+      
+      <!-- Role Switcher Controls -->
+      <div class="role-switcher-container">
+        <button class="role-toggle-btn employee active" id="role-emp-btn" onclick="toggleUserRole('employee')">
+          <i data-lucide="user"></i> พนักงาน
+        </button>
+        <button class="role-toggle-btn approver" id="role-app-btn" onclick="toggleUserRole('approver')">
+          <i data-lucide="shield-check"></i> ผู้อนุมัติ
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Frame Screen -->
+    <div class="mobile-frame" id="mobile-frame">
+
+      <!-- APP HEADER -->
+      <header class="app-header">
+        <div class="header-top">
+          <div class="brand-logo">
+            <div class="logo-mark">
+              <span class="logo-dot"></span>
+              <span class="logo-dot orange"></span>
+            </div>
+            <div class="logo-text">
+              <span class="brand-name">SOFT<b>DEBUT</b></span>
+              <span class="brand-subtext">BELIEVE IN PROFESSIONAL</span>
+            </div>
+          </div>
+          <div class="user-profile-widget" onclick="toggleUserMenu()">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="avatar-img" id="user-avatar-img">
+            <div class="user-info">
+              <span class="user-name" id="user-name-txt">ณัฐวุฒิ วิเศษสุวรรณ</span>
+              <span class="user-role" id="user-role-txt">Software QA Engineer</span>
+            </div>
+            <i data-lucide="chevron-down" class="dropdown-icon"></i>
+          </div>
+        </div>
+
+        <!-- Banner Title -->
+        <div class="system-banner">
+          <div class="system-title">
+            <i data-lucide="clock" class="banner-icon"></i>
+            <span id="banner-title-text">ระบบ Time Management</span>
+          </div>
+          <button class="filter-trigger-btn" onclick="toggleFilterDrawer()" id="btn-filter-toggle">
+            <i data-lucide="sliders-horizontal"></i>
+            <span class="filter-badge-dot"></span>
+          </button>
+        </div>
+
+        <!-- Horizontal Nav Tabs for Employee -->
+        <nav class="app-nav-tabs" id="nav-tabs-employee">
+          <button class="nav-tab-item active" id="tab-home" onclick="switchMainTab('home')">
+            <i data-lucide="home"></i> หน้าแรก
+          </button>
+          <button class="nav-tab-item" id="tab-create-leave" onclick="switchMainTab('create-leave')">
+            <i data-lucide="plus-circle"></i> ลางาน
+          </button>
+          <button class="nav-tab-item" id="tab-leave-records" onclick="switchMainTab('leave-records')">
+            <i data-lucide="file-text"></i> รายการลา
+          </button>
+          <button class="nav-tab-item" id="tab-reports" onclick="switchMainTab('reports')">
+            <i data-lucide="bar-chart-3"></i> รายงาน
+          </button>
+        </nav>
+
+        <!-- Horizontal Nav Tabs for Approver -->
+        <nav class="app-nav-tabs hide" id="nav-tabs-approver">
+          <button class="nav-tab-item active" id="tab-app-pending" onclick="goToScreen('screen-approver-list')">
+            <i data-lucide="check-square"></i> รออนุมัติ <span class="nav-badge-count">3</span>
+          </button>
+          <button class="nav-tab-item" id="tab-app-create" onclick="goToScreen('screen-approver-create')">
+            <i data-lucide="user-plus"></i> เขียนใบลาแทน
+          </button>
+          <button class="nav-tab-item" id="tab-app-history" onclick="goToScreen('screen-leave-list')">
+            <i data-lucide="history"></i> ประวัติคำขอ
+          </button>
+        </nav>
+      </header>
+
+      <!-- MAIN CONTENT AREA WITH SCREENS -->
+      <main class="app-main-content">
+
+        <!-- SCREEN 0: หน้าแรก (HOME DASHBOARD VIEW) -->
+        <section id="screen-home" class="screen-view active">
+          
+          <!-- Announcement Card -->
+          <div class="announcement-card">
+            <div class="announcement-header">
+              <i data-lucide="megaphone" class="announce-icon"></i>
+              <h4>ข่าวประชาสัมพันธ์บริษัท</h4>
+            </div>
+            <div class="announcement-body">
+              <h3 class="announce-title">การยื่นขอลาพักร้อนประจำปีล่วงหน้าช่วงวันหยุดนักขัตฤกษ์</h3>
+              <p class="announce-desc">ขอความร่วมมือพนักงานทุกท่านยื่นคำขอลาพักร้อนล่วงหน้าอย่างน้อย 7 วันทำการ ผ่านระบบ Time Management เพื่อให้หัวหน้างานจัดสรรกำลังคนอย่างเหมาะสม</p>
+              <span class="announce-subtext">ประกาศ ณ วันที่ 1 สิงหาคม 2569 | ฝ่ายทรัพยากรบุคคล (HR Dept)</span>
+            </div>
+          </div>
+
+          <!-- Employee & Supervisor Info Card -->
+          <div class="ui-card profile-summary-card">
+            <div class="card-title-bar">
+              <h3 class="card-h3"><i data-lucide="user-check"></i> ข้อมูลพนักงาน & ผู้บังคับบัญชา</h3>
+            </div>
+            
+            <div class="profile-info-grid" style="display: flex !important; flex-direction: column !important; width: 100% !important; gap: 12px;">
+              
+              <!-- กล่องที่ 1: ข้อมูลพนักงาน (ด้านบน) -->
+              <div class="info-block">
+                <span class="block-title"><i data-lucide="id-card"></i> ข้อมูลพนักงาน</span>
+                <div class="info-row-item">
+                  <span class="lbl">รหัสพนักงาน :</span>
+                  <span class="val font-mono">EMP-20240892</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="lbl">ชื่อ-นามสกุล :</span>
+                  <span class="val bold">นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="lbl">ตำแหน่ง :</span>
+                  <span class="val">Software QA Engineer</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="lbl">สังกัด / แผนก :</span>
+                  <span class="val">Software QA & Testing Team (Software Dev Div 4)</span>
+                </div>
+              </div>
+
+              <!-- กล่องที่ 2: ผู้บังคับบัญชา (ด้านล่าง) -->
+              <div class="info-block supervisor">
+                <span class="block-title"><i data-lucide="shield-check"></i> ผู้บังคับบัญชา</span>
+                <div class="info-row-item">
+                  <span class="lbl">ชื่อ-นามสกุล :</span>
+                  <span class="val bold">นาย อนุรักษ์ สายชล</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="lbl">ตำแหน่ง :</span>
+                  <span class="val">Senior QA Manager</span>
+                </div>
+                <div class="info-row-item">
+                  <span class="lbl">สังกัด / แผนก :</span>
+                  <span class="val">Software QA & Testing Team (Software Dev Div 4)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leave Quota Summary Cards -->
+          <div class="section-title-row">
+            <h3 class="card-h3"><i data-lucide="pie-chart"></i> สิทธิวันลาหยุดประจำปี 2569 (Quota)</h3>
+            <button class="btn-text-link" onclick="goToScreen('screen-leave-list')">ดูรายการลาทั้งหมด <i data-lucide="chevron-right"></i></button>
+          </div>
+
+          <div class="quota-cards-grid">
+            
+            <!-- Quota 1: 0100 - ลาพักร้อนประจำปี -->
+            <div class="quota-card main-vacation">
+              <div class="quota-card-header">
+                <div class="quota-title-group">
+                  <span class="quota-icon-badge orange"><i data-lucide="sun"></i></span>
+                  <div>
+                    <h4>0100 - ลาพักร้อนประจำปี</h4>
+                    <span class="quota-sub">สะสมปีก่อน: 2.0 วัน | ประจำปี 2569: 8.0 วัน</span>
+                  </div>
+                </div>
+              </div>
+              <div class="quota-card-body">
+                <div class="quota-metric-row">
+                  <div class="metric-item">
+                    <span class="m-lbl">สิทธิรวม</span>
+                    <span class="m-val">10.0 วัน</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">ใช้แล้ว</span>
+                    <span class="m-val">2.0 วัน</span>
+                  </div>
+                  <div class="metric-item highlight">
+                    <span class="m-lbl">คงเหลือ</span>
+                    <span class="m-val orange-txt">8.0 วัน</span>
+                  </div>
+                </div>
+
+                <!-- Detailed Breakdown Toggle -->
+                <div class="quota-breakdown-list">
+                  <div class="breakdown-row"><span class="lbl">วันหยุดพักผ่อนยกมาจากปี 2568:</span><span class="val">2.0 วัน</span></div>
+                  <div class="breakdown-row"><span class="lbl">จำนวนวันหยุดพักผ่อนประจำปี 2569:</span><span class="val">8.0 วัน</span></div>
+                  <div class="breakdown-row"><span class="lbl">สิทธิ์วันหยุดพักผ่อนเพิ่มเติมตามเกณฑ์:</span><span class="val">0.0 วัน</span></div>
+                  <div class="breakdown-row"><span class="lbl">รวมจำนวนวันหยุดพักผ่อนสะสมปี 2569:</span><span class="val bold">10.0 วัน</span></div>
+                </div>
+
+                <div class="quota-progress-bar margin-top-sm">
+                  <div class="progress-fill orange" style="width: 20%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quota 2: 0200 - ลากิจจำเป็น -->
+            <div class="quota-card">
+              <div class="quota-card-header">
+                <div class="quota-title-group">
+                  <span class="quota-icon-badge purple"><i data-lucide="briefcase"></i></span>
+                  <div>
+                    <h4>0200 - ลากิจจำเป็น</h4>
+                    <span class="quota-sub">สิทธิการลาตามระเบียบบริษัท (รับค่าจ้าง)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="quota-card-body">
+                <div class="quota-metric-row">
+                  <div class="metric-item">
+                    <span class="m-lbl">สิทธิสูงสุด</span>
+                    <span class="m-val">6.0 วัน</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">ใช้แล้ว</span>
+                    <span class="m-val">0.5 วัน</span>
+                  </div>
+                  <div class="metric-item highlight">
+                    <span class="m-lbl">คงเหลือ</span>
+                    <span class="m-val purple-txt">5.5 วัน</span>
+                  </div>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill purple" style="width: 8%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quota 3: 0300 - ลาป่วย -->
+            <div class="quota-card">
+              <div class="quota-card-header">
+                <div class="quota-title-group">
+                  <span class="quota-icon-badge green"><i data-lucide="heart-pulse"></i></span>
+                  <div>
+                    <h4>0300 - ลาป่วย</h4>
+                    <span class="quota-sub">สิทธิการลาตามกฎหมายคุ้มครองแรงงาน</span>
+                  </div>
+                </div>
+              </div>
+              <div class="quota-card-body">
+                <div class="quota-metric-row">
+                  <div class="metric-item">
+                    <span class="m-lbl">สิทธิสูงสุด</span>
+                    <span class="m-val">30.0 วัน</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">ใช้แล้ว</span>
+                    <span class="m-val">1.0 วัน</span>
+                  </div>
+                  <div class="metric-item highlight">
+                    <span class="m-lbl">คงเหลือ</span>
+                    <span class="m-val green-txt">29.0 วัน</span>
+                  </div>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill green" style="width: 3%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quota 4: 0000 - ลาอื่นๆ -->
+            <div class="quota-card">
+              <div class="quota-card-header">
+                <div class="quota-title-group">
+                  <span class="quota-icon-badge blue"><i data-lucide="file-plus"></i></span>
+                  <div>
+                    <h4>0000 - ลาอื่นๆ (ลาทำหมัน/ลาคลอด/รับราชการ)</h4>
+                    <span class="quota-sub">สิทธิการลาตามระเบียบกรณีพิเศษ</span>
+                  </div>
+                </div>
+              </div>
+              <div class="quota-card-body">
+                <div class="quota-metric-row">
+                  <div class="metric-item">
+                    <span class="m-lbl">สิทธิสูงสุด</span>
+                    <span class="m-val">ตามสิทธิ</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">ใช้แล้ว</span>
+                    <span class="m-val">0.0 วัน</span>
+                  </div>
+                  <div class="metric-item highlight">
+                    <span class="m-lbl">คงเหลือ</span>
+                    <span class="m-val blue-txt">ตามสิทธิ</span>
+                  </div>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill blue" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Action Floating Banner -->
+          <div class="quick-action-banner">
+            <div>
+              <span class="q-title">ต้องการขอลาพักร้อนหรือลากิจ?</span>
+              <span class="q-desc">ทำรายการยื่นคำขออนุมัติออนไลน์ได้ทันที</span>
+            </div>
+            <button class="btn-quick-leave" onclick="goToScreen('screen-create-leave')">
+              <i data-lucide="plus"></i> ยื่นคำขอลา
+            </button>
+          </div>
+
+          <!-- SYSTEM FOOTER -->
+          <footer class="app-footer">
+            <span class="footer-brand"><strong>SOFTDEBUT CO., LTD.</strong> | ระบบบริหารจัดการเวลาและการลา</span>
+            <span class="footer-contact">ติดต่อสอบถามฝ่ายทรัพยากรบุคคล: hr@softdebut.com | โทร. 02-123-4567</span>
+          </footer>
+
+        </section>
+
+
+        <!-- SCREEN APPROVER 1: รายการรออนุมัติ (APPROVER PENDING REQUESTS SCREEN) -->
+        <section id="screen-approver-list" class="screen-view">
+          <div class="screen-header-row">
+            <div>
+              <h1 class="page-title">รายการรออนุมัติ</h1>
+              <p class="page-subtitle">คำขออนุมัติการลาของพนักงานในทีม QA & Testing</p>
+            </div>
+            <button class="btn-primary-action" onclick="goToScreen('screen-approver-create')">
+              <i data-lucide="user-plus"></i> เขียนใบลาแทน
+            </button>
+          </div>
+
+          <!-- Quick Status Filter Chips for Approver -->
+          <div class="status-chips-scroll">
+            <button class="chip pending active" onclick="filterApproverStatus('pending')">รออนุมัติ <span class="chip-count">3</span></button>
+            <button class="chip orange-outline" onclick="filterApproverStatus('cancel-req')">ขอยกเลิก <span class="chip-count">1</span></button>
+            <button class="chip approved" onclick="filterApproverStatus('approved')">อนุมัติแล้ว <span class="chip-count">1</span></button>
+            <button class="chip rejected" onclick="filterApproverStatus('rejected')">ไม่อนุมัติ <span class="chip-count">1</span></button>
+          </div>
+
+          <!-- Approver Mobile Requests List -->
+          <div class="leave-cards-container" id="approver-cards-container">
+            
+            <!-- Approver Card 1 -->
+            <article class="leave-card approver-card-item">
+              <div class="card-header">
+                <div class="approver-user-info">
+                  <div class="avatar-circle-text orange">ณ</div>
+                  <div>
+                    <span class="emp-name font-bold">นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+                    <span class="doc-sub">เลขที่ LV-202608-0142 | Software QA Engineer</span>
+                  </div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="tag"></i> ประเภทการลา</span>
+                    <span class="info-value highlight">0100 - ลาพักร้อนประจำปี</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock"></i> จำนวน</span>
+                    <span class="info-value badge-days">1.0 วัน</span>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> ช่วงวันที่ลา</span>
+                    <span class="info-value">18 ส.ค. 2569 (เต็มวัน)</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> วันที่ยื่น</span>
+                    <span class="info-value text-muted-sm">3 ส.ค. 2569 - 11:01</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="openApproverDetailSheet('นาย ณัฐวุฒิ วิเศษสุวรรณ', 'LV-202608-0142', '0100 - ลาพักร้อนประจำปี', '18 ส.ค. 2569', '1.0 วัน')">
+                  <i data-lucide="search"></i> ดูรายละเอียด
+                </button>
+                <button class="btn-card-action approve-solid" onclick="openApprovalModal('นาย ณัฐวุฒิ วิเศษสุวรรณ', '0100 - ลาพักร้อนประจำปี', '18 ส.ค. 2569', '1.0 วัน')">
+                  <i data-lucide="check"></i> อนุมัติ
+                </button>
+              </div>
+            </article>
+
+            <!-- Approver Card 2 -->
+            <article class="leave-card approver-card-item">
+              <div class="card-header">
+                <div class="approver-user-info">
+                  <div class="avatar-circle-text blue">ป</div>
+                  <div>
+                    <span class="emp-name font-bold">นางสาว ปรียานุช วงศ์สว่าง</span>
+                    <span class="doc-sub">เลขที่ LV-202608-0138 | Senior Frontend Developer</span>
+                  </div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="tag"></i> ประเภทการลา</span>
+                    <span class="info-value highlight">0300 - ลาป่วย</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock"></i> จำนวน</span>
+                    <span class="info-value badge-days">1.0 วัน</span>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> ช่วงวันที่ลา</span>
+                    <span class="info-value">14 ส.ค. 2569 (เต็มวัน)</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> วันที่ยื่น</span>
+                    <span class="info-value text-muted-sm">3 ส.ค. 2569 - 10:25</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="openApproverDetailSheet('นางสาว ปรียานุช วงศ์สว่าง', 'LV-202608-0138', '0300 - ลาป่วย', '14 ส.ค. 2569', '1.0 วัน')">
+                  <i data-lucide="search"></i> ดูรายละเอียด
+                </button>
+                <button class="btn-card-action approve-solid" onclick="openApprovalModal('นางสาว ปรียานุช วงศ์สว่าง', '0300 - ลาป่วย', '14 ส.ค. 2569', '1.0 วัน')">
+                  <i data-lucide="check"></i> อนุมัติ
+                </button>
+              </div>
+            </article>
+
+            <!-- Approver Card 3 -->
+            <article class="leave-card approver-card-item">
+              <div class="card-header">
+                <div class="approver-user-info">
+                  <div class="avatar-circle-text purple">ก</div>
+                  <div>
+                    <span class="emp-name font-bold">นาย กิตติศักดิ์ พัฒนากุล</span>
+                    <span class="doc-sub">เลขที่ LV-202608-0120 | Cloud DevOps Engineer</span>
+                  </div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="tag"></i> ประเภทการลา</span>
+                    <span class="info-value highlight">0200 - ลากิจจำเป็น</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock"></i> จำนวน</span>
+                    <span class="info-value badge-days">0.5 วัน</span>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> ช่วงวันที่ลา</span>
+                    <span class="info-value">11 ส.ค. 2569 (ครึ่งบ่าย)</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> วันที่ยื่น</span>
+                    <span class="info-value text-muted-sm">2 ส.ค. 2569 - 16:40</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="openApproverDetailSheet('นาย กิตติศักดิ์ พัฒนากุล', 'LV-202608-0120', '0200 - ลากิจจำเป็น', '11 ส.ค. 2569 (ครึ่งบ่าย)', '0.5 วัน')">
+                  <i data-lucide="search"></i> ดูรายละเอียด
+                </button>
+                <button class="btn-card-action approve-solid" onclick="openApprovalModal('นาย กิตติศักดิ์ พัฒนากุล', '0200 - ลากิจจำเป็น', '11 ส.ค. 2569 (ครึ่งบ่าย)', '0.5 วัน')">
+                  <i data-lucide="check"></i> อนุมัติ
+                </button>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+
+        <!-- SCREEN APPROVER 2: เขียนใบลา (โดยผู้พิจารณาอนุมัติ) - SCREEN-APPROVER-CREATE -->
+        <section id="screen-approver-create" class="screen-view">
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-approver-list')"><i data-lucide="arrow-left"></i> รายการรออนุมัติ</button>
+            <span class="sep">/</span>
+            <span class="current">เขียนใบลาแทนพนักงาน</span>
+          </div>
+
+          <div class="section-title-card alert-orange">
+            <i data-lucide="user-plus"></i>
+            <div>
+              <h3>ยื่นคำขอลาแทนพนักงาน (โดยผู้บังคับบัญชา)</h3>
+              <p>เลือกพนักงานในสายการบังคับบัญชาเพื่อยื่นเรื่องอนุมัติลาแทน</p>
+            </div>
+          </div>
+
+          <!-- Select Employee Card Section -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="users"></i> เลือกพนักงานในทีม</h3>
+            <div class="form-group-mobile margin-top-sm">
+              <div class="input-with-icon">
+                <i data-lucide="search"></i>
+                <input type="text" class="form-input" placeholder="ค้นหาชื่อ, สังกัด หรือ รหัสพนักงาน...">
+              </div>
+            </div>
+
+            <div class="emp-select-list">
+              <div class="emp-select-card selected" id="emp-select-usr001" onclick="selectEmployeeOnBehalf('USR001', 'นางสาว ปรียานุช วงศ์สว่าง')">
+                <div class="emp-radio-col">
+                  <input type="radio" name="emp_choice" checked>
+                </div>
+                <div class="emp-detail-col">
+                  <span class="emp-name font-bold">นางสาว ปรียานุช วงศ์สว่าง</span>
+                  <span class="emp-code">รหัส: EMP-20240801</span>
+                  <span class="emp-dept-sm">Senior Frontend Developer (Software Development Team)</span>
+                </div>
+              </div>
+
+              <div class="emp-select-card" id="emp-select-usr002" onclick="selectEmployeeOnBehalf('USR002', 'นาย ณัฐวุฒิ วิเศษสุวรรณ')">
+                <div class="emp-radio-col">
+                  <input type="radio" name="emp_choice">
+                </div>
+                <div class="emp-detail-col">
+                  <span class="emp-name font-bold">นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+                  <span class="emp-code">รหัส: EMP-20240892</span>
+                  <span class="emp-dept-sm">Software QA Engineer (Software QA & Testing Team)</span>
+                </div>
+              </div>
+
+              <div class="emp-select-card" id="emp-select-usr003" onclick="selectEmployeeOnBehalf('USR003', 'นาย กิตติศักดิ์ พัฒนากุล')">
+                <div class="emp-radio-col">
+                  <input type="radio" name="emp_choice">
+                </div>
+                <div class="emp-detail-col">
+                  <span class="emp-name font-bold">นาย กิตติศักดิ์ พัฒนากุล</span>
+                  <span class="emp-code">รหัส: EMP-20240815</span>
+                  <span class="emp-dept-sm">Cloud DevOps Engineer (Infrastructure Team)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leave Details for Approver On Behalf -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="calendar"></i> เลือกประเภทการลา & กำหนดวัน</h3>
+            
+            <div class="form-group-mobile margin-top-sm">
+              <label class="form-label required">ประเภทการลา</label>
+              <select class="form-select">
+                <option value="vacation" selected>0100 - ลาพักร้อนประจำปี</option>
+                <option value="personal">0200 - ลากิจจำเป็น</option>
+                <option value="sick">0300 - ลาป่วย</option>
+                <option value="other">0000 - ลาอื่นๆ (ลาทำหมัน/ลาคลอด/รับราชการทหาร)</option>
+              </select>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group-mobile">
+                <label class="form-label required">ตั้งแต่วันที่</label>
+                <input type="date" class="form-input" value="2026-08-18">
+              </div>
+              <div class="form-group-mobile">
+                <label class="form-label required">ถึงวันที่</label>
+                <input type="date" class="form-input" value="2026-08-18">
+              </div>
+            </div>
+
+            <div class="form-group-mobile">
+              <label class="form-label">กรณีเร่งด่วนติดต่อ</label>
+              <input type="text" class="form-input" value="081-987-6543 (เบอร์มือถือพนักงาน)">
+            </div>
+
+            <div class="form-group-mobile">
+              <label class="form-label">รายละเอียดเพิ่มเติม / หมายเหตุ</label>
+              <textarea class="form-textarea" rows="2" placeholder="ระบุเหตุผลในการยื่นใบลาแทนพนักงาน..."></textarea>
+            </div>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-approver-list')">ยกเลิก</button>
+            <button class="btn-action-submit orange" onclick="showToast('อนุมัติยื่นใบลาแทนพนักงานเรียบร้อยแล้ว'); goToScreen('screen-approver-list')">บันทึกและอนุมัติยื่นเรื่อง</button>
+          </div>
+        </section>
+
+
+        <!-- SCREEN 0.5: ทำรายการลา / ลางาน (CREATE LEAVE FOR EMPLOYEE) -->
+        <section id="screen-create-leave" class="screen-view">
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-home')"><i data-lucide="arrow-left"></i> หน้าแรก</button>
+            <span class="sep">/</span>
+            <span class="current">ทำรายการลา</span>
+          </div>
+
+          <div class="section-title-card alert-orange">
+            <i data-lucide="file-plus"></i>
+            <div>
+              <h3>เรียน ผู้บังคับบัญชา (ผู้พิจารณาอนุมัติ)</h3>
+              <p>กรุณาตรวจสอบข้อมูลเส้นทางการอนุมัติและระเบียบการลา</p>
+            </div>
+          </div>
+
+          <!-- Approver Select & Stepper Card -->
+          <div class="ui-card">
+            <div class="form-group-mobile">
+              <label class="form-label required">ผู้พิจารณาอนุมัติหลัก</label>
+              <select class="form-select">
+                <option value="anurak" selected>นาย อนุรักษ์ สายชล (Senior QA Manager)</option>
+              </select>
+            </div>
+
+            <div class="card-title-bar margin-top-sm">
+              <h3 class="card-h3"><i data-lucide="git-commit"></i> เส้นทางการขออนุมัติ</h3>
+              <span class="sub-status">อนุมัติแล้ว 0 / 2 ขั้น</span>
+            </div>
+
+            <div class="timeline-stepper">
+              <div class="step-item active-current">
+                <div class="step-icon-col">
+                  <div class="step-badge">1</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-content-box">
+                  <div class="step-header">
+                    <span class="step-name">ขั้นที่ 1 - ผู้บังคับบัญชาชั้นต้น</span>
+                    <span class="badge-mini orange">อนุมัติโดยใครก็ได้</span>
+                  </div>
+                  <div class="approver-card">
+                    <div class="approver-avatar">อน</div>
+                    <div class="approver-detail">
+                      <span class="name">นาย อนุรักษ์ สายชล</span>
+                      <span class="dept">Senior QA Manager | Software QA Team</span>
+                    </div>
+                  </div>
+                  <div class="approver-card">
+                    <div class="approver-avatar">วิ</div>
+                    <div class="approver-detail">
+                      <span class="name">นางสาว วิภาดา ศรีสุข</span>
+                      <span class="dept">Lead QA Engineer | Software QA Team</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leave Regulations Accordion Card -->
+            <div class="regulations-accordion" id="regulations-box">
+              <div class="reg-header" onclick="toggleRegulationsAccordion()">
+                <div class="reg-title">
+                  <i data-lucide="book-open"></i>
+                  <span>รายละเอียดระเบียบการลา : <b id="reg-leave-title-txt">0100 - ลาพักร้อนประจำปี</b></span>
+                </div>
+                <i data-lucide="chevron-down" id="reg-chevron"></i>
+              </div>
+              <div class="reg-content" id="reg-content">
+                <div class="reg-rule-item">
+                  <span class="rule-label">จำนวนสิทธิการลา:</span>
+                  <span class="rule-val highlight">8 - 12 วันทำการ / ปี</span>
+                </div>
+                <div class="reg-rule-item">
+                  <span class="rule-label">เงื่อนไขสิทธิการลาตามอายุงาน:</span>
+                  <ul class="rule-list">
+                    <li>อายุงาน 1 - 2 ปี = 8 วันทำการ</li>
+                    <li>อายุงาน 3 - 4 ปี = 10 วันทำการ</li>
+                    <li>อายุงาน 5 ปีขึ้นไป = 12 วันทำการ</li>
+                    <li>ยื่นขอลาล่วงหน้าอย่างน้อย 7 วันทำการ / ยกยอดสะสมได้ไม่เกิน 2 วัน</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Leave Mode Selector -->
+          <div class="ui-card">
+            <div class="form-group-mobile">
+              <label class="form-label required">ประเภทการลา</label>
+              <select class="form-select" id="create-leave-type" onchange="updateLeaveTypeTitle(this.value)">
+                <option value="vacation" selected>0100 - ลาพักร้อนประจำปี</option>
+                <option value="personal">0200 - ลากิจจำเป็น</option>
+                <option value="sick">0300 - ลาป่วย</option>
+                <option value="other">0000 - ลาอื่นๆ (ลาทำหมัน/ลาคลอด/รับราชการทหาร)</option>
+              </select>
+            </div>
+
+            <div class="form-group-mobile">
+              <label class="form-label required">รูปแบบปฏิทิน</label>
+              <select class="form-select" id="create-calendar-mode" onchange="toggleLeaveCalendarMode(this.value)">
+                <option value="specific" selected>ระบุวัน (เลือกรายวันจากปฏิทิน)</option>
+                <option value="range">กำหนดช่วงวัน (เริ่มต้น - สิ้นสุด)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- MODE 1: Specific Date Selection (ระบุวัน) -->
+          <div id="mode-container-specific" class="leave-mode-container active">
+            <div class="ui-card">
+              <button class="btn-add-dates-trigger" onclick="toggleTouchCalendarView()">
+                <i data-lucide="plus"></i> เพิ่มวันที่จากปฏิทิน
+              </button>
+
+              <div class="color-indicators-row">
+                <span class="ind-item"><span class="dot-ind orange"></span> เต็มวัน</span>
+                <span class="ind-item"><span class="dot-ind green"></span> ครึ่งเช้า</span>
+                <span class="ind-item"><span class="dot-ind purple"></span> ครึ่งบ่าย</span>
+              </div>
+
+              <!-- Interactive Touch Calendar -->
+              <div class="calendar-card-inline" id="create-inline-calendar">
+                <div class="calendar-header-bar">
+                  <button class="cal-nav-btn"><i data-lucide="chevron-left"></i></button>
+                  <span class="cal-month-title">สิงหาคม 2569</span>
+                  <button class="cal-nav-btn"><i data-lucide="chevron-right"></i></button>
+                </div>
+
+                <div class="calendar-grid">
+                  <div class="cal-day-name sun">อา</div>
+                  <div class="cal-day-name">จ</div>
+                  <div class="cal-day-name">อ</div>
+                  <div class="cal-day-name">พ</div>
+                  <div class="cal-day-name">พฤ</div>
+                  <div class="cal-day-name">ศ</div>
+                  <div class="cal-day-name sat">ส</div>
+
+                  <div class="cal-date muted">27</div>
+                  <div class="cal-date muted">28</div>
+                  <div class="cal-date muted">29</div>
+                  <div class="cal-date muted">30</div>
+                  <div class="cal-date muted">31</div>
+                  <div class="cal-date">1</div>
+                  <div class="cal-date sat">2</div>
+
+                  <div class="cal-date sun">3</div>
+                  <div class="cal-date">4</div>
+                  <div class="cal-date">5</div>
+                  <div class="cal-date">6</div>
+                  <div class="cal-date selected-range start end" onclick="showToast('เลือกวันที่ 18 ส.ค. 2569')">
+                    <span>18</span>
+                    <span class="badge-sel">เต็มวัน</span>
+                  </div>
+                  <div class="cal-date">8</div>
+                  <div class="cal-date sat">9</div>
+
+                  <div class="cal-date sun">10</div>
+                  <div class="cal-date">11</div>
+                  <div class="cal-date">12</div>
+                  <div class="cal-date">13</div>
+                  <div class="cal-date">14</div>
+                  <div class="cal-date">15</div>
+                  <div class="cal-date sat">16</div>
+                </div>
+              </div>
+
+              <!-- Selected Dates Result List -->
+              <div class="selected-days-box margin-top-md">
+                <span class="box-title">ระบุวัน (ขออนุมัติ <span id="selected-leave-type-txt">0100 - ลาพักร้อนประจำปี</span> : จำนวน <b>1.0</b> วันทำการ)</span>
+                <div class="selected-day-row">
+                  <span class="s-date">18 ส.ค. 2569</span>
+                  <span class="s-type orange">เต็มวัน (08:30 - 17:30 น.)</span>
+                  <button class="btn-del-day" onclick="showToast('ลบรายการวันลาแล้ว')"><i data-lucide="trash-2"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 2: Date Range Calculation (กำหนดช่วงวัน) -->
+          <div id="mode-container-range" class="leave-mode-container">
+            <div class="ui-card">
+              <h3 class="card-h3"><i data-lucide="calculator"></i> คำนวณช่วงวันลาอัตโนมัติ</h3>
+              
+              <div class="form-group-mobile">
+                <label class="form-label required">ตั้งแต่วันที่</label>
+                <div class="input-with-icon">
+                  <i data-lucide="calendar"></i>
+                  <input type="date" id="range-start-date" class="form-input" value="2026-08-18" onchange="calculateLeaveEndDate()">
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group-mobile">
+                  <label class="form-label required">จำนวนวันทำการ</label>
+                  <input type="number" id="range-day-count" class="form-input" value="1" min="0.5" step="0.5" oninput="calculateLeaveEndDate()">
+                </div>
+                <div class="form-group-mobile align-end">
+                  <button class="btn-action-submit orange calc-btn" onclick="calculateLeaveEndDate()">
+                    <i data-lucide="calculator"></i> คำนวณ
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group-mobile">
+                <label class="form-label">จนถึงวันที่ (คำนวณให้อัตโนมัติ)</label>
+                <input type="text" id="range-end-date-result" class="form-input bold font-mono highlight-orange" value="18/08/2569" readonly>
+              </div>
+
+              <div class="instruction-box">
+                <ol>
+                  <li>เลือกวันที่เริ่มต้น ในช่องตั้งแต่วันที่</li>
+                  <li>ใส่จำนวนวันที่ต้องการลา ในช่องจำนวนวันทำการ</li>
+                  <li>กดปุ่ม คำนวณ ระบบจะคำนวณวันสิ้นสุดให้อัตโนมัติ</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency Contact & Remarks Card -->
+          <div class="ui-card">
+            <div class="form-group-mobile">
+              <label class="form-label">กรณีเร่งด่วนติดต่อ</label>
+              <input type="text" class="form-input" value="081-987-6543 (เบอร์ส่วนตัวพนักงาน)">
+            </div>
+            <div class="form-group-mobile">
+              <label class="form-label">รายละเอียดเพิ่มเติม / เหตุผลในการลา</label>
+              <textarea class="form-textarea" rows="2" placeholder="ระบุเหตุผลการขอลา..."></textarea>
+            </div>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-home')">ยกเลิกคำขอ</button>
+            <button class="btn-action-submit orange" onclick="showToast('ยื่นคำขอลาเรียบร้อยแล้ว'); goToScreen('screen-leave-list')">ยืนยันยื่นคำขอลา</button>
+          </div>
+        </section>
+
+
+        <!-- SCREEN 1: รายการลา (Leave Requests List View) -->
+        <section id="screen-leave-list" class="screen-view">
+          <div class="screen-header-row">
+            <div>
+              <h1 class="page-title">รายการลาของคุณ</h1>
+              <p class="page-subtitle">ประวัติและติดตามสถานะคำขออนุมัติการลา</p>
+            </div>
+            <button class="btn-primary-action" onclick="goToScreen('screen-create-leave')">
+              <i data-lucide="plus"></i> ยื่นคำขอลา
+            </button>
+          </div>
+
+          <div class="status-chips-scroll">
+            <button class="chip active" onclick="filterByStatus('all')">ทั้งหมด <span class="chip-count">3</span></button>
+            <button class="chip pending" onclick="filterByStatus('pending')">รออนุมัติ <span class="chip-count">1</span></button>
+            <button class="chip approved" onclick="filterByStatus('approved')">อนุมัติแล้ว <span class="chip-count">1</span></button>
+            <button class="chip rejected" onclick="filterByStatus('rejected')">ไม่อนุมัติ <span class="chip-count">1</span></button>
+          </div>
+
+          <div class="leave-cards-container" id="leave-cards-container">
+            
+            <!-- Card 1: Pending -->
+            <article class="leave-card status-pending" id="card-LV-202608-0142">
+              <div class="card-header">
+                <div class="doc-info">
+                  <span class="doc-number">LV-202608-0142</span>
+                  <span class="leave-type-tag orange">0100 - ลาพักร้อน</span>
+                </div>
+                <span class="status-badge pending">
+                  <i data-lucide="clock"></i> รออนุมัติ
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> วันที่เริ่ม - สิ้นสุด</span>
+                    <span class="info-value highlight">18 ส.ค. 2569 - 18 ส.ค. 2569</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> จำนวนวัน</span>
+                    <span class="info-value badge-days">1.0 วัน</span>
+                  </div>
+                </div>
+                <div class="meta-footer">
+                  <span>ยื่นเมื่อ: 3 ส.ค. 2569 - 11:01 น.</span>
+                  <span>อัปเดต: 3 ส.ค. 2569</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="goToScreen('screen-details-approved')">
+                  <i data-lucide="search"></i> ดูรายละเอียด
+                </button>
+                <button class="btn-card-action edit" onclick="goToScreen('screen-edit-leave')">
+                  <i data-lucide="edit-3"></i> แก้ไข
+                </button>
+                <button class="btn-card-action cancel" onclick="goToScreen('screen-cancel-leave')">
+                  <i data-lucide="x-circle"></i> ยกเลิกคำขอ
+                </button>
+              </div>
+            </article>
+
+            <!-- Card 2: Approved -->
+            <article class="leave-card status-approved" id="card-LV-202607-0098">
+              <div class="card-header">
+                <div class="doc-info">
+                  <span class="doc-number">LV-202607-0098</span>
+                  <span class="leave-type-tag orange">0100 - ลาพักร้อน</span>
+                </div>
+                <span class="status-badge approved">
+                  <i data-lucide="check-circle-2"></i> อนุมัติแล้ว
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> วันที่เริ่ม - สิ้นสุด</span>
+                    <span class="info-value highlight">7 ส.ค. 2569 - 8 ส.ค. 2569</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> จำนวนวัน</span>
+                    <span class="info-value badge-days">1.0 วัน</span>
+                  </div>
+                </div>
+                <div class="meta-footer">
+                  <span>ยื่นเมื่อ: 25 ก.ค. 2569 - 09:30 น.</span>
+                  <span>ผู้อนุมัติ: นาย อนุรักษ์ สายชล</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="goToScreen('screen-details-approved')">
+                  <i data-lucide="search"></i> ดูรายละเอียด
+                </button>
+                <button class="btn-card-action revoke" onclick="showToast('ยื่นเรื่องขอยกเลิกวันลาที่อนุมัติแล้วเรียบร้อย')">
+                  <i data-lucide="rotate-ccw"></i> ขอยกเลิกวันลา
+                </button>
+              </div>
+            </article>
+
+            <!-- Card 3: Rejected (ไม่อนุมัติ - ตัวอย่างคำขอที่ไม่ผ่านการอนุมัติ) -->
+            <article class="leave-card status-rejected" id="card-LV-202607-0075">
+              <div class="card-header">
+                <div class="doc-info">
+                  <span class="doc-number">LV-202607-0075</span>
+                  <span class="leave-type-tag purple">0200 - ลากิจ</span>
+                </div>
+                <span class="status-badge rejected">
+                  <i data-lucide="x-circle"></i> ไม่อนุมัติ
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="info-row">
+                  <div class="info-item">
+                    <span class="info-label"><i data-lucide="calendar"></i> วันที่เริ่ม - สิ้นสุด</span>
+                    <span class="info-value highlight">20 ก.ค. 2569 - 20 ก.ค. 2569</span>
+                  </div>
+                  <div class="info-item right">
+                    <span class="info-label"><i data-lucide="clock-4"></i> จำนวนวัน</span>
+                    <span class="info-value badge-days red">1.0 วัน</span>
+                  </div>
+                </div>
+
+                <!-- Rejection Reason Box Card Component -->
+                <div class="rejection-reason-box">
+                  <div class="rejection-reason-header">
+                    <i data-lucide="alert-circle"></i>
+                    <span>เหตุผลที่ไม่พิจารณาอนุมัติ :</span>
+                  </div>
+                  <p class="rejection-reason-text">"เนื่องจากอยู่ในช่วงเร่งส่งมอบงานโปรเจกต์ QA Testing ประจำไตรมาส 3 ขอให้พิจารณาปรับเลื่อนวันลาออกไปก่อน"</p>
+                  <span class="rejection-by">ผู้อนุมัติ: นาย อนุรักษ์ สายชล (Senior QA Manager) - 19 ก.ค. 2569 14:30 น.</span>
+                </div>
+
+                <div class="meta-footer margin-top-sm">
+                  <span>ยื่นเมื่อ: 18 ก.ค. 2569 - 14:15 น.</span>
+                  <span>พิจารณาโดย: นาย อนุรักษ์ สายชล</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-card-action view" onclick="goToScreen('screen-details-rejected')">
+                  <i data-lucide="search"></i> ดูรายละเอียดคำขอ
+                </button>
+                <button class="btn-card-action edit" onclick="goToScreen('screen-create-leave')">
+                  <i data-lucide="rotate-ccw"></i> ยื่นคำขอใหม่
+                </button>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+
+        <!-- SCREEN 3: รายละเอียดคำขอที่ไม่อนุมัติ (REJECTED LEAVE REQUEST DETAIL VIEW) -->
+        <section id="screen-details-rejected" class="screen-view">
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-leave-list')"><i data-lucide="arrow-left"></i> รายการลา</button>
+            <span class="sep">/</span>
+            <span class="current">รายละเอียดคำขอที่ไม่อนุมัติ</span>
+          </div>
+
+          <div class="section-title-card alert-red">
+            <i data-lucide="x-circle"></i>
+            <div>
+              <h3>คำขอลานี้ไม่ผ่านการอนุมัติ</h3>
+              <p>พิจารณาโดย: <b>นาย อนุรักษ์ สายชล (Senior QA Manager)</b></p>
+            </div>
+          </div>
+
+          <!-- Main Info Card -->
+          <div class="ui-card">
+            <div class="card-title-bar">
+              <h3 class="card-h3"><i data-lucide="file-text"></i> เอกสารเลขที่ LV-202607-0075</h3>
+              <span class="status-badge rejected">ไม่อนุมัติ</span>
+            </div>
+            
+            <div class="details-grid-compact">
+              <div class="detail-cell">
+                <span class="lbl">ประเภทการลา</span>
+                <span class="val font-bold">0200 - ลากิจจำเป็น</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">จำนวนวันลา</span>
+                <span class="val font-bold red-txt">1.0 วันทำการ</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่เริ่มต้น</span>
+                <span class="val">20 กรกฎาคม 2569</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่สิ้นสุด</span>
+                <span class="val">20 กรกฎาคม 2569</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่ยื่นเรื่อง</span>
+                <span class="val">18 ก.ค. 2569 - 14:15 น.</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">ติดต่อเร่งด่วน</span>
+                <span class="val font-mono">081-987-6543</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rejection Detail Box Card -->
+          <div class="ui-card border-red">
+            <h3 class="card-h3 red-txt"><i data-lucide="message-square"></i> เหตุผลการไม่อนุมัติจากผู้บังคับบัญชา</h3>
+            <div class="rejection-full-detail-box margin-top-sm">
+              <p class="rejection-quote font-bold">"เนื่องจากอยู่ในช่วงเร่งส่งมอบงานโปรเจกต์ QA Testing ประจำไตรมาส 3 ขอให้พิจารณาปรับเลื่อนวันลาออกไปก่อน"</p>
+              <div class="rejection-meta-info">
+                <div class="user-info-row">
+                  <div class="avatar-circle-text red">อน</div>
+                  <div>
+                    <span class="emp-name font-bold">นาย อนุรักษ์ สายชล</span>
+                    <span class="doc-sub">Senior QA Manager | Software QA & Testing Team</span>
+                  </div>
+                </div>
+                <span class="date-txt">ดำเนินการเมื่อ: 19 ก.ค. 2569 เวลา 14:30 น.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audit Stepper Timeline -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="git-commit"></i> ประวัติการพิจารณาคำขอ (Audit Trail)</h3>
+            
+            <div class="timeline-stepper margin-top-sm">
+              <!-- Step 1: Created -->
+              <div class="step-item step-done">
+                <div class="step-icon-col">
+                  <div class="step-badge check"><i data-lucide="check"></i></div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-content-box">
+                  <div class="step-header">
+                    <span class="step-name">1. ยื่นคำขอสำเร็จ</span>
+                    <span class="step-time">18 ก.ค. 2569 - 14:15 น.</span>
+                  </div>
+                  <p class="step-desc">พนักงาน นาย ณัฐวุฒิ วิเศษสุวรรณ ยื่นคำขอลาออนไลน์ผ่านระบบ</p>
+                </div>
+              </div>
+
+              <!-- Step 2: Rejected -->
+              <div class="step-item step-rejected">
+                <div class="step-icon-col">
+                  <div class="step-badge cross"><i data-lucide="x"></i></div>
+                </div>
+                <div class="step-content-box">
+                  <div class="step-header">
+                    <span class="step-name red-txt font-bold">2. ไม่อนุมัติคำขอ</span>
+                    <span class="step-time">19 ก.ค. 2569 - 14:30 น.</span>
+                  </div>
+                  <p class="step-desc">ผู้บังคับบัญชา นาย อนุรักษ์ สายชล ปฏิเสธคำขออนุมัติพร้อมระบุเหตุผล</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-leave-list')">ย้อนกลับ</button>
+            <button class="btn-action-submit orange" onclick="goToScreen('screen-create-leave')"><i data-lucide="rotate-ccw"></i> ยื่นคำขอใหม่</button>
+          </div>
+        </section>
+
+
+        <!-- SCREEN 2: ยกเลิกรายการลา (Cancel Leave Request Page) -->
+        <section id="screen-cancel-leave" class="screen-view">
+          
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-leave-list')"><i data-lucide="arrow-left"></i> รายการลา</button>
+            <span class="sep">/</span>
+            <span class="current">ยกเลิกคำขอลา</span>
+          </div>
+
+          <div class="section-title-card alert-orange">
+            <i data-lucide="alert-triangle"></i>
+            <div>
+              <h3>ยกเลิกคำขอลา</h3>
+              <p>ผู้พิจารณาอนุมัติ: <b>นาย อนุรักษ์ สายชล (Senior QA Manager)</b></p>
+            </div>
+          </div>
+
+          <div class="ui-card">
+            <div class="card-title-bar">
+              <h3 class="card-h3">รายละเอียดคำขอลา</h3>
+              <span class="status-badge pending">รออนุมัติ</span>
+            </div>
+            <div class="details-grid-compact">
+              <div class="detail-cell">
+                <span class="lbl">เลขที่เอกสาร</span>
+                <span class="val font-mono">LV-202608-0142</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">ประเภทการลา</span>
+                <span class="val">0100 - ลาพักร้อนประจำปี</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ui-card">
+            <label for="cancel-reason-input" class="form-label required">เหตุผลในการขอยกเลิก</label>
+            <textarea id="cancel-reason-input" class="form-textarea" rows="3" placeholder="ระบุเหตุผลที่ต้องการขอยกเลิกคำขอลา..."></textarea>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-leave-list')">ย้อนกลับ</button>
+            <button class="btn-action-submit orange" onclick="confirmCancelLeave()">ยืนยันยกเลิกคำขอ</button>
+          </div>
+        </section>
+
+
+        <!-- SCREEN 4: รายละเอียดคำขอที่อนุมัติแล้ว (APPROVED LEAVE REQUEST DETAIL VIEW) -->
+        <section id="screen-details-approved" class="screen-view">
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-leave-list')"><i data-lucide="arrow-left"></i> รายการลา</button>
+            <span class="sep">/</span>
+            <span class="current">รายละเอียดคำขอที่อนุมัติแล้ว</span>
+          </div>
+
+          <div class="section-title-card alert-green">
+            <i data-lucide="check-circle-2"></i>
+            <div>
+              <h3>คำขอลานี้ได้รับการอนุมัติเรียบร้อย</h3>
+              <p>ผู้อนุมัติ: <b>นาย อนุรักษ์ สายชล (Senior QA Manager)</b></p>
+            </div>
+          </div>
+
+          <!-- Main Info Card -->
+          <div class="ui-card">
+            <div class="card-title-bar">
+              <h3 class="card-h3"><i data-lucide="file-text"></i> เอกสารเลขที่ LV-202607-0098</h3>
+              <span class="status-badge approved">อนุมัติแล้ว</span>
+            </div>
+            
+            <div class="details-grid-compact">
+              <div class="detail-cell">
+                <span class="lbl">ประเภทการลา</span>
+                <span class="val font-bold">0100 - ลาพักร้อนประจำปี</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">จำนวนวันลา</span>
+                <span class="val font-bold green-txt">1.0 วันทำการ</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่เริ่มต้น</span>
+                <span class="val">7 สิงหาคม 2569</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่สิ้นสุด</span>
+                <span class="val">8 สิงหาคม 2569</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่ยื่นเรื่อง</span>
+                <span class="val">25 ก.ค. 2569 - 09:30 น.</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">ติดต่อเร่งด่วน</span>
+                <span class="val font-mono">081-987-6543</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approver Remarks Card -->
+          <div class="ui-card">
+            <h3 class="card-h3 green-txt"><i data-lucide="message-square"></i> ความเห็นการอนุมัติจากผู้บังคับบัญชา</h3>
+            <div class="rejection-full-detail-box margin-top-sm" style="background: #F0FDF4; border-left-color: #16A34A;">
+              <p class="rejection-quote font-bold" style="color: #14532D;">"อนุมัติคำขอลาพักร้อนเรียบร้อยแล้ว ทีม QA มีกำลังคนรองรับงานเทสระบบเพียงพอช่วงดังกล่าว"</p>
+              <div class="rejection-meta-info" style="border-top-color: #BBF7D0;">
+                <div class="user-info-row">
+                  <div class="avatar-circle-text green">อน</div>
+                  <div>
+                    <span class="emp-name font-bold">นาย อนุรักษ์ สายชล</span>
+                    <span class="doc-sub">Senior QA Manager | Software QA & Testing Team</span>
+                  </div>
+                </div>
+                <span class="date-txt" style="color: #15803D;">ดำเนินการเมื่อ: 26 ก.ค. 2569 เวลา 10:15 น.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audit Stepper Timeline -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="git-commit"></i> ประวัติการพิจารณาคำขอ (Audit Trail)</h3>
+            
+            <div class="timeline-stepper margin-top-sm">
+              <div class="step-item step-done">
+                <div class="step-icon-col">
+                  <div class="step-badge check"><i data-lucide="check"></i></div>
+                  <div class="step-line active"></div>
+                </div>
+                <div class="step-content-box">
+                  <div class="step-header">
+                    <span class="step-name">1. ยื่นคำขอสำเร็จ</span>
+                    <span class="step-time">25 ก.ค. 2569 - 09:30 น.</span>
+                  </div>
+                  <p class="step-desc">พนักงาน นาย ณัฐวุฒิ วิเศษสุวรรณ ยื่นคำขอลาออนไลน์ผ่านระบบ</p>
+                </div>
+              </div>
+
+              <div class="step-item step-done">
+                <div class="step-icon-col">
+                  <div class="step-badge check" style="background: #16A34A;"><i data-lucide="check"></i></div>
+                </div>
+                <div class="step-content-box">
+                  <div class="step-header">
+                    <span class="step-name green-txt font-bold">2. อนุมัติคำขอสำเร็จ</span>
+                    <span class="step-time">26 ก.ค. 2569 - 10:15 น.</span>
+                  </div>
+                  <p class="step-desc">ผู้บังคับบัญชา นาย อนุรักษ์ สายชล อนุมัติคำขอลาพักร้อนประจำปี</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-leave-list')">ย้อนกลับ</button>
+            <button class="btn-action-submit orange" onclick="showToast('ยื่นเรื่องขอยกเลิกวันลาที่อนุมัติแล้วเรียบร้อย'); goToScreen('screen-leave-list')"><i data-lucide="rotate-ccw"></i> ขอยกเลิกวันลา</button>
+          </div>
+        </section>
+
+
+        <!-- SCREEN 5: รายงานสรุปวันลาประจำปี 2569 (REPORTS & ANALYTICS VIEW) -->
+        <section id="screen-reports" class="screen-view">
+          <div class="screen-header-row">
+            <div>
+              <h1 class="page-title">รายงานสรุปวันลาประจำปี 2569</h1>
+              <p class="page-subtitle">ภาพรวมสิทธิวันลาและการใช้งานประจำปีของพนักงาน</p>
+            </div>
+          </div>
+
+          <!-- Summary Metric Cards -->
+          <div class="reports-metric-grid">
+            <div class="metric-card">
+              <span class="m-title"><i data-lucide="pie-chart"></i> สิทธิใช้แล้วรวม</span>
+              <span class="m-number orange-txt">3.5 วัน</span>
+              <span class="m-sub">จากสิทธิรวมทั้งหมด 46.0 วัน</span>
+            </div>
+            <div class="metric-card">
+              <span class="m-title"><i data-lucide="check-circle-2"></i> สิทธิคงเหลือรวม</span>
+              <span class="m-number green-txt">42.5 วัน</span>
+              <span class="m-sub">พร้อมใช้งานในปี 2569</span>
+            </div>
+            <div class="metric-card">
+              <span class="m-title"><i data-lucide="trending-up"></i> อัตราการอนุมัติ</span>
+              <span class="m-number purple-txt">85.0%</span>
+              <span class="m-sub">อนุมัติแล้ว 2 จาก 3 คำขอ</span>
+            </div>
+          </div>
+
+          <!-- Leave Breakdown Progress Card -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="bar-chart-2"></i> รายละเอียดการใช้สิทธิแยกตามประเภท</h3>
+            
+            <div class="report-progress-list margin-top-sm">
+              <div class="report-prog-item">
+                <div class="prog-header">
+                  <span class="prog-name bold">0100 - ลาพักร้อนประจำปี</span>
+                  <span class="prog-val">ใช้แล้ว 2.0 / 10.0 วัน (20%)</span>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill orange" style="width: 20%;"></div>
+                </div>
+                <span class="prog-sub">คงเหลือพร้อมใช้งาน: 8.0 วันทำการ</span>
+              </div>
+
+              <div class="report-prog-item margin-top-sm">
+                <div class="prog-header">
+                  <span class="prog-name bold">0200 - ลากิจจำเป็น</span>
+                  <span class="prog-val">ใช้แล้ว 0.5 / 6.0 วัน (8%)</span>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill purple" style="width: 8%;"></div>
+                </div>
+                <span class="prog-sub">คงเหลือพร้อมใช้งาน: 5.5 วันทำการ</span>
+              </div>
+
+              <div class="report-prog-item margin-top-sm">
+                <div class="prog-header">
+                  <span class="prog-name bold">0300 - ลาป่วย</span>
+                  <span class="prog-val">ใช้แล้ว 1.0 / 30.0 วัน (3%)</span>
+                </div>
+                <div class="quota-progress-bar">
+                  <div class="progress-fill green" style="width: 3%;"></div>
+                </div>
+                <span class="prog-sub">คงเหลือพร้อมใช้งาน: 29.0 วันทำการ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export & Action Buttons -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="download"></i> ส่งออกรายงานและเอกสาร</h3>
+            <p class="caption margin-top-sm">ดาวน์โหลดรายงานสรุปสิทธิวันลาในรูปแบบ PDF หรือ Excel เพื่อใช้แนบเอกสารทางราชการ</p>
+            <div class="report-export-btns margin-top-sm">
+              <button class="btn-action-submit orange" onclick="showToast('กำลังดาวน์โหลดรายงาน PDF สรุปวันลา 2569...')">
+                <i data-lucide="file-text"></i> ดาวน์โหลดรายงาน PDF
+              </button>
+              <button class="btn-action-cancel" onclick="showToast('กำลังส่งออกไฟล์ Excel สรุปวันลา...')">
+                <i data-lucide="file-spreadsheet"></i> ส่งออกไฟล์ Excel
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- SCREEN 6: ปฏิทินวันลาและตารางทีม (TEAM CALENDAR & MONTHLY SCHEDULE VIEW) -->
+        <section id="screen-edit-leave" class="screen-view">
+          <div class="screen-header-row">
+            <div>
+              <h1 class="page-title">ปฏิทินการลาทีม QA & Testing</h1>
+              <p class="page-subtitle">ตารางวันหยุดและประวัติการลาของสมาชิกในทีมประจำเดือนสิงหาคม 2569</p>
+            </div>
+          </div>
+
+          <!-- Calendar View Card -->
+          <div class="ui-card">
+            <div class="calendar-header-bar">
+              <button class="cal-nav-btn"><i data-lucide="chevron-left"></i></button>
+              <span class="cal-month-title">สิงหาคม 2569</span>
+              <button class="cal-nav-btn"><i data-lucide="chevron-right"></i></button>
+            </div>
+
+            <div class="calendar-grid">
+              <div class="cal-day-name sun">อา</div>
+              <div class="cal-day-name">จ</div>
+              <div class="cal-day-name">อ</div>
+              <div class="cal-day-name">พ</div>
+              <div class="cal-day-name">พฤ</div>
+              <div class="cal-day-name">ศ</div>
+              <div class="cal-day-name sat">ส</div>
+
+              <div class="cal-date muted">27</div>
+              <div class="cal-date muted">28</div>
+              <div class="cal-date muted">29</div>
+              <div class="cal-date muted">30</div>
+              <div class="cal-date muted">31</div>
+              <div class="cal-date">1</div>
+              <div class="cal-date sat">2</div>
+
+              <div class="cal-date sun">3</div>
+              <div class="cal-date">4</div>
+              <div class="cal-date">5</div>
+              <div class="cal-date">6</div>
+              <div class="cal-date">7</div>
+              <div class="cal-date">8</div>
+              <div class="cal-date sat">9</div>
+
+              <div class="cal-date sun">10</div>
+              <div class="cal-date event-leave">
+                <span>11</span>
+                <span class="dot-event purple"></span>
+              </div>
+              <div class="cal-date event-leave holiday">
+                <span class="font-bold red-txt">12</span>
+                <span class="badge-sel red">วันแม่</span>
+              </div>
+              <div class="cal-date">13</div>
+              <div class="cal-date event-leave">
+                <span>14</span>
+                <span class="dot-event green"></span>
+              </div>
+              <div class="cal-date">15</div>
+              <div class="cal-date sat">16</div>
+
+              <div class="cal-date sun">17</div>
+              <div class="cal-date selected-range start end">
+                <span>18</span>
+                <span class="badge-sel">ณัฐวุฒิ</span>
+              </div>
+              <div class="cal-date">19</div>
+              <div class="cal-date">20</div>
+              <div class="cal-date">21</div>
+              <div class="cal-date">22</div>
+              <div class="cal-date sat">23</div>
+            </div>
+          </div>
+
+          <!-- Team Leave Roster List -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="users"></i> ตารางวันลาของสมาชิกในทีม</h3>
+            
+            <div class="leave-cards-container margin-top-sm">
+              <div class="day-item-card">
+                <div>
+                  <span class="s-date">18 ส.ค. 2569 - นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+                  <div class="caption">0100 - ลาพักร้อนประจำปี (เต็มวัน)</div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+
+              <div class="day-item-card">
+                <div>
+                  <span class="s-date">14 ส.ค. 2569 - นางสาว ปรียานุช วงศ์สว่าง</span>
+                  <div class="caption">0300 - ลาป่วย (เต็มวัน)</div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+
+              <div class="day-item-card">
+                <div>
+                  <span class="s-date">11 ส.ค. 2569 - นาย กิตติศักดิ์ พัฒนากุล</span>
+                  <div class="caption">0200 - ลากิจจำเป็น (ครึ่งบ่าย)</div>
+                </div>
+                <span class="status-badge pending">รออนุมัติ</span>
+              </div>
+
+              <div class="day-item-card" style="background: #FFF5F5; border-color: #FECACA;">
+                <div>
+                  <span class="s-date red-txt font-bold">12 ส.ค. 2569 - วันหยุดบริษัท (วันแม่แห่งชาติ)</span>
+                  <div class="caption">วันหยุดนักขัตฤกษ์ประจำปี 2569</div>
+                </div>
+                <span class="status-badge" style="background: #FEE2E2; color: #DC2626;">วันหยุด</span>
+              </div>
+            </div>
+          </div>
+
+        <!-- SCREEN 7: ข้อมูลส่วนตัวและการตั้งค่า (USER PROFILE & ACCOUNT SETTINGS VIEW) -->
+        <section id="screen-profile" class="screen-view">
+          <div class="mobile-breadcrumb">
+            <button onclick="goToScreen('screen-home')"><i data-lucide="arrow-left"></i> หน้าแรก</button>
+            <span class="sep">/</span>
+            <span class="current">ข้อมูลส่วนตัวและการตั้งค่า</span>
+          </div>
+
+          <!-- User Card Header -->
+          <div class="ui-card profile-user-header-card">
+            <div class="profile-avatar-large-wrapper">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" alt="Avatar" class="avatar-large-img">
+              <button class="btn-change-avatar" onclick="showToast('ฟังก์ชันเปลี่ยนรูปโปรไฟล์')"><i data-lucide="camera"></i></button>
+            </div>
+            <div class="profile-user-title">
+              <h2 class="section-heading">นาย ณัฐวุฒิ วิเศษสุวรรณ</h2>
+              <span class="user-code-badge font-mono">EMP-20240892</span>
+              <span class="user-role-badge">Software QA Engineer</span>
+            </div>
+          </div>
+
+          <!-- Account Info Details Card -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="user"></i> ข้อมูลบัญชีผู้ใช้งาน</h3>
+            <div class="details-grid-compact margin-top-sm">
+              <div class="detail-cell">
+                <span class="lbl">อีเมลบริษัท</span>
+                <span class="val font-mono">nattawut.v@softdebut.com</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">เบอร์โทรศัพท์</span>
+                <span class="val font-mono">081-987-6543</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">สังกัด / แผนก</span>
+                <span class="val">Software QA & Testing Team</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">ฝ่ายงาน</span>
+                <span class="val">Software Development Div 4</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">วันที่เริ่มงาน</span>
+                <span class="val">1 สิงหาคม 2567</span>
+              </div>
+              <div class="detail-cell">
+                <span class="lbl">อายุงาน</span>
+                <span class="val bold orange-txt">2 ปี 0 เดือน</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Settings & Notifications Card -->
+          <div class="ui-card">
+            <h3 class="card-h3"><i data-lucide="settings"></i> การตั้งค่าการแจ้งเตือน</h3>
+            
+            <div class="setting-toggle-row margin-top-sm">
+              <div class="setting-text">
+                <span class="set-title">การแจ้งเตือนผ่าน LINE Notify</span>
+                <span class="set-sub">รับการแจ้งเตือนเมื่อคำขออนุมัติมีอัปเดต</span>
+              </div>
+              <input type="checkbox" checked class="setting-checkbox">
+            </div>
+
+            <div class="setting-toggle-row margin-top-sm">
+              <div class="setting-text">
+                <span class="set-title">การแจ้งเตือนผ่าน Email</span>
+                <span class="set-sub">รับสำเนาใบอนุมัติการลาทางอีเมล</span>
+              </div>
+              <input type="checkbox" checked class="setting-checkbox">
+            </div>
+          </div>
+
+          <div class="mobile-action-footer">
+            <button class="btn-action-cancel" onclick="goToScreen('screen-home')">ย้อนกลับ</button>
+            <button class="btn-action-submit orange" onclick="showToast('บันทึกการตั้งค่าโปรไฟล์เรียบร้อยแล้ว'); goToScreen('screen-home')">บันทึกการตั้งค่า</button>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- PREMIUM ENHANCED BOTTOM MOBILE NAVIGATION BAR FOR EMPLOYEE -->
+      <nav class="mobile-bottom-bar" id="bottom-bar-employee">
+        <button class="bottom-nav-item active" id="bnav-home" onclick="goToScreen('screen-home'); setBottomNavActive(this)">
+          <i data-lucide="home"></i>
+          <span>หน้าแรก</span>
+        </button>
+        <button class="bottom-nav-item" id="bnav-leave-list" onclick="goToScreen('screen-leave-list'); setBottomNavActive(this)">
+          <i data-lucide="file-text"></i>
+          <span>รายการลา</span>
+        </button>
+        
+        <!-- Elevated Center Floating Action Button -->
+        <div class="bottom-nav-action-wrapper">
+          <button class="bottom-nav-center-btn" onclick="goToScreen('screen-create-leave')">
+            <i data-lucide="plus"></i>
+          </button>
+          <span class="center-btn-label">ยื่นลา</span>
+        </div>
+
+        <button class="bottom-nav-item" id="bnav-calendar" onclick="goToScreen('screen-edit-leave'); setBottomNavActive(this)">
+          <i data-lucide="calendar"></i>
+          <span>ปฏิทิน</span>
+        </button>
+        <button class="bottom-nav-item" id="bnav-reports" onclick="goToScreen('screen-reports'); setBottomNavActive(this)">
+          <i data-lucide="bar-chart-3"></i>
+          <span>รายงาน</span>
+        </button>
+      </nav>
+
+      <!-- PREMIUM ENHANCED BOTTOM MOBILE NAVIGATION BAR FOR APPROVER -->
+      <nav class="mobile-bottom-bar hide" id="bottom-bar-approver">
+        <button class="bottom-nav-item active" id="abnav-pending" onclick="goToScreen('screen-approver-list'); setBottomNavActive(this)">
+          <div class="bnav-icon-badge-wrapper">
+            <i data-lucide="check-square"></i>
+            <span class="bnav-badge-dot">3</span>
+          </div>
+          <span>รออนุมัติ</span>
+        </button>
+        <button class="bottom-nav-item" id="abnav-history" onclick="goToScreen('screen-leave-list'); setBottomNavActive(this)">
+          <i data-lucide="history"></i>
+          <span>ประวัติคำขอ</span>
+        </button>
+        
+        <!-- Elevated Center Floating Action Button for Approver -->
+        <div class="bottom-nav-action-wrapper">
+          <button class="bottom-nav-center-btn approver-color" onclick="goToScreen('screen-approver-create')">
+            <i data-lucide="user-plus"></i>
+          </button>
+          <span class="center-btn-label">ลาแทน</span>
+        </div>
+
+        <button class="bottom-nav-item" id="abnav-calendar" onclick="goToScreen('screen-edit-leave'); setBottomNavActive(this)">
+          <i data-lucide="calendar"></i>
+          <span>ปฏิทินทีม</span>
+        </button>
+        <button class="bottom-nav-item" id="abnav-reports" onclick="goToScreen('screen-reports'); setBottomNavActive(this)">
+          <i data-lucide="bar-chart-2"></i>
+          <span>สถิติทีม</span>
+        </button>
+      </nav>
+
+      <!-- ==========================================================================
+         APPROVER BOTTOM SHEET DIALOGS (MODALS)
+         ========================================================================== -->
+
+      <!-- 1. APPROVAL CONFIRMATION BOTTOM SHEET -->
+      <div class="bottom-sheet-overlay" id="approval-confirm-overlay" onclick="closeApprovalModal()"></div>
+      <div class="bottom-sheet-card" id="approval-confirm-sheet">
+        <div class="sheet-handle-bar"></div>
+        <button class="btn-sheet-close" onclick="closeApprovalModal()"><i data-lucide="x"></i></button>
+        
+        <div class="sheet-icon-circle orange-bg">
+          <i data-lucide="check" class="icon-orange"></i>
+        </div>
+
+        <h3 class="sheet-title">อนุมัติคำขอลานี้?</h3>
+        <p class="sheet-subtitle">ระบบจะบันทึกและส่งการแจ้งเตือนไปยังผู้ขอลา</p>
+
+        <div class="sheet-summary-box">
+          <div class="sheet-sum-row">
+            <span class="lbl">ผู้ขอลา</span>
+            <span class="val font-bold" id="app-sheet-emp-name">นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">ประเภทการลา</span>
+            <span class="val" id="app-sheet-leave-type">0100 - ลาพักร้อนประจำปี</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">ช่วงวัน</span>
+            <span class="val" id="app-sheet-leave-dates">18 ส.ค. 2569</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">จำนวนวัน</span>
+            <span class="val font-bold orange-txt" id="app-sheet-leave-days">1.0 วัน</span>
+          </div>
+        </div>
+
+        <div class="sheet-actions-row">
+          <button class="btn-sheet-cancel" onclick="closeApprovalModal()">ยกเลิก</button>
+          <button class="btn-sheet-submit orange" onclick="confirmApproveRequest()">ยืนยันอนุมัติ</button>
+        </div>
+      </div>
+
+      <!-- 2. REJECTION CONFIRMATION BOTTOM SHEET -->
+      <div class="bottom-sheet-overlay" id="rejection-confirm-overlay" onclick="closeRejectionModal()"></div>
+      <div class="bottom-sheet-card" id="rejection-confirm-sheet">
+        <div class="sheet-handle-bar"></div>
+        <button class="btn-sheet-close" onclick="closeRejectionModal()"><i data-lucide="x"></i></button>
+
+        <div class="sheet-icon-circle red-bg">
+          <i data-lucide="x" class="icon-red"></i>
+        </div>
+
+        <h3 class="sheet-title">ไม่อนุมัติคำขอลานี้?</h3>
+        <p class="sheet-subtitle">โปรดระบุเหตุผลเพื่อแจ้งผู้ขอลาทราบ</p>
+
+        <div class="sheet-summary-box">
+          <div class="sheet-sum-row">
+            <span class="lbl">ผู้ขอลา</span>
+            <span class="val font-bold" id="rej-sheet-emp-name">นางสาว ปรียานุช วงศ์สว่าง</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">ประเภทการลา</span>
+            <span class="val" id="rej-sheet-leave-type">0300 - ลาป่วย</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">ช่วงวัน</span>
+            <span class="val" id="rej-sheet-leave-dates">14 ส.ค. 2569</span>
+          </div>
+          <div class="sheet-sum-row">
+            <span class="lbl">จำนวนวัน</span>
+            <span class="val font-bold red-txt" id="rej-sheet-leave-days">1.0 วัน</span>
+          </div>
+        </div>
+
+        <div class="form-group-mobile margin-top-sm text-left">
+          <label class="form-label required red-txt">เหตุผลการไม่อนุมัติ <span class="badge-mini red">*จำเป็น</span></label>
+          <textarea id="rejection-reason-textarea" class="form-textarea error-border" rows="2" placeholder="ระบุเหตุผลที่ไม่อนุมัติเพื่อแจ้งพนักงาน..."></textarea>
+        </div>
+
+        <div class="sheet-actions-row">
+          <button class="btn-sheet-cancel" onclick="closeRejectionModal()">ยกเลิก</button>
+          <button class="btn-sheet-submit red" onclick="confirmRejectRequest()">ยืนยันไม่อนุมัติ</button>
+        </div>
+      </div>
+
+      <!-- 3. APPROVER REQUEST DETAIL BOTTOM SHEET -->
+      <div class="bottom-sheet-overlay" id="approver-detail-overlay" onclick="closeApproverDetailSheet()"></div>
+      <div class="bottom-sheet-card large-sheet" id="approver-detail-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header-bar">
+          <h3 class="sheet-title text-left">รายละเอียดคำขอลา</h3>
+          <button class="btn-sheet-close" onclick="closeApproverDetailSheet()"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="detail-sheet-user-badge">
+          <div class="avatar-circle-text orange" id="dtl-avatar">ณ</div>
+          <div>
+            <span class="font-bold block-title-text" id="dtl-emp-name">นาย ณัฐวุฒิ วิเศษสุวรรณ</span>
+            <span class="doc-sub" id="dtl-doc-num">เลขที่ LV-202608-0142</span>
+          </div>
+          <span class="status-badge pending badge-right">รออนุมัติ</span>
+        </div>
+
+        <div class="sheet-detail-section">
+          <h4 class="sec-title"><i data-lucide="file-text"></i> ข้อมูลการลา</h4>
+          <div class="sheet-sum-row"><span class="lbl">ประเภทการลา</span><span class="val bold" id="dtl-leave-type">0100 - ลาพักร้อนประจำปี</span></div>
+          <div class="sheet-sum-row"><span class="lbl">ช่วงวันลา</span><span class="val" id="dtl-dates">18 ส.ค. 2569</span></div>
+          <div class="sheet-sum-row"><span class="lbl">จำนวนวัน</span><span class="val bold orange-txt" id="dtl-days">1.0 วัน</span></div>
+          <div class="sheet-sum-row"><span class="lbl">วันที่ยื่นเรื่อง</span><span class="val">3 ส.ค. 2569 - 11:01 น.</span></div>
+        </div>
+
+        <div class="sheet-detail-section">
+          <h4 class="sec-title"><i data-lucide="phone-call"></i> ข้อมูลติดต่อพนักงาน</h4>
+          <span class="text-muted-sm">เบอร์ติดต่อเร่งด่วน: 081-987-6543 (เบอร์ส่วนตัวพนักงาน)</span>
+        </div>
+
+        <div class="sheet-actions-row margin-top-md">
+          <button class="btn-sheet-submit outline-red" onclick="closeApproverDetailSheet(); openRejectionModal('นาย ณัฐวุฒิ วิเศษสุวรรณ', '0100 - ลาพักร้อนประจำปี', '18 ส.ค. 2569', '1.0 วัน')">
+            <i data-lucide="x"></i> ไม่อนุมัติ
+          </button>
+          <button class="btn-sheet-submit orange" onclick="closeApproverDetailSheet(); openApprovalModal('นาย ณัฐวุฒิ วิเศษสุวรรณ', '0100 - ลาพักร้อนประจำปี', '18 ส.ค. 2569', '1.0 วัน')">
+            <i data-lucide="check"></i> อนุมัติ
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTER DRAWER SLIDE-OVER -->
+      <div class="filter-drawer-overlay" id="filter-drawer-overlay" onclick="toggleFilterDrawer()"></div>
+      <aside class="filter-drawer" id="filter-drawer">
+        <div class="drawer-header">
+          <h3><i data-lucide="sliders-horizontal"></i> ค้นหารายการลา</h3>
+          <button class="btn-close-drawer" onclick="toggleFilterDrawer()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="drawer-body">
+          <div class="form-group-mobile">
+            <label class="form-label">ค้นหาประเภทการลา</label>
+            <input type="text" class="form-input" placeholder="พิมพ์ชื่อหรือรหัสประเภทการลา...">
+          </div>
+          <div class="form-group-mobile">
+            <label class="form-label">สถานะเอกสาร</label>
+            <select class="form-select" id="filter-status-select">
+              <option value="all">ทั้งหมด</option>
+              <option value="pending">รออนุมัติ</option>
+              <option value="approved">อนุมัติแล้ว</option>
+              <option value="rejected">ไม่อนุมัติ</option>
+            </select>
+          </div>
+        </div>
+        <div class="drawer-footer">
+          <button class="btn-action-cancel" onclick="resetFilters()">ล้างค่า</button>
+          <button class="btn-action-submit orange" onclick="applyFilters()">ค้นหา</button>
+        </div>
+      </aside>
+
+      <!-- TOAST NOTIFICATION -->
+      <div class="toast-notification" id="toast-msg">
+        <i data-lucide="info" id="toast-icon"></i>
+        <span id="toast-text">ทำรายการสำเร็จ</span>
+      </div>
+
+    </div> <!-- End Mobile Frame -->
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
