@@ -1,0 +1,10 @@
+{
+  "description": "Create and manage design files with precision, ensuring 100% fidelity to original specifications for designers and teams seeking consistency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

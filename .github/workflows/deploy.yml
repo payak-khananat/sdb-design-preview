@@ -1,0 +1,56 @@
+# Build เว็บ (Vite) แล้ว deploy ขึ้น GitHub Pages อัตโนมัติทุกครั้งที่ push ขึ้น main
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # กดสั่งรันเองได้จากแท็บ Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # enablement: true = เปิด GitHub Pages ให้อัตโนมัติ ไม่ต้องไปกดใน Settings → Pages เอง
+      - id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          # vite.config.ts อ่านค่านี้ไปตั้ง base ของ asset (บรรทัด 14)
+          # GitHub Pages วางไซต์ไว้ใต้ /<ชื่อ repo>/ ถ้าไม่ตั้งค่านี้หน้าจะขาวเพราะหา js/css ไม่เจอ
+          # ${{ github.event.repository.name }} = ชื่อ repo อัตโนมัติ ไม่ต้องมาแก้เอง
+          FIGMA_PUBLIC_URL: /${{ github.event.repository.name }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
